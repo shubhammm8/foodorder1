@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/apikit http://www.mulesoft.org/schema/mule/apikit/current/mule-apikit.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
+    <http:listener-config name="foodorder-httpListenerConfig" host="0.0.0.0" port="8081" doc:name="HTTP Listener Configuration" />
+    <apikit:config name="foodorder-config" raml="foodorder.raml" consoleEnabled="false" doc:name="Router" />
+    <flow name="foodorder-main">
+        <http:listener config-ref="foodorder-httpListenerConfig" path="/api/*" doc:name="HTTP" />
+        <apikit:router config-ref="foodorder-config" doc:name="APIkit Router" />
+        <exception-strategy ref="foodorder-apiKitGlobalExceptionMapping" doc:name="Reference Exception Strategy" />
+    </flow>
+    <flow name="foodorder-console">
+        <http:listener config-ref="foodorder-httpListenerConfig" path="/console/*" doc:name="HTTP" />
+        <apikit:console config-ref="foodorder-config" doc:name="APIkit Console" />
+    </flow>
+    <flow name="put:/v1/categories/{CATID}:foodorder-config">
+        <set-session-variable variableName="categoryId" value="#[message.inboundProperties.'http.uri.params'.CATID]" doc:name="category id" />
+        <flow-ref name="putfoodCategories" doc:name="Flow Reference" />
+    </flow>
+    <flow name="put:/v1/foodItems/{FOODID}:foodorder-config">
+        <set-payload value="{&#xA; &quot;response&quot;:&quot;successfully updated&quot;&#xA;}" doc:name="Set Payload" />
+    </flow>
+    <flow name="put:/v1/MealDay/{MEALDAYID}:foodorder-config">
+        <set-session-variable variableName="dayId" value="#[message.inboundProperties.'http.uri.params'.MEALDAYID]" doc:name="Session Variable" />
+        <flow-ref name="put_mealdayFlow" doc:name="Flow Reference" />
+    </flow>
+    <flow name="put:/v1/MealType/{MEALID}:foodorder-config">
+        <set-session-variable variableName="mealId" value="#[message.inboundProperties.'http.uri.params'.MEALID]" doc:name="mealId" />
+        <flow-ref name="update_mealtype" doc:name="Flow Reference" />
+    </flow>
+    <flow name="delete:/v1/categories/{CATID}:foodorder-config">
+        <set-session-variable variableName="foodcategoryId" value="#[message.inboundProperties.'http.uri.params'.CATID]" doc:name="Session Variable" />
+        <flow-ref name="delete_category" doc:name="Flow Reference" />
+    </flow>
+    <flow name="delete:/v1/foodItems/{FOODID}:foodorder-config">
+        <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+        <set-payload value="{&#xA;  &quot;response&quot;:&quot;Deleted Successfully&quot;&#xA; }" doc:name="Set Payload" />
+    </flow>
+    <flow name="delete:/v1/MealDay/{MEALDAYID}:foodorder-config">
+        <set-session-variable variableName="dayId" value="#[message.inboundProperties.'http.uri.params'.MEALDAYID]" doc:name="Session Variable" />
+        <flow-ref name="delete_mealdayFlow" doc:name="Flow Reference" />
+    </flow>
+    <flow name="delete:/v1/MealType/{MEALID}:foodorder-config">
+        <set-session-variable variableName="mealId" value="#[message.inboundProperties.'http.uri.params'.MEALID]" doc:name="Session Variable" />
+        <flow-ref name="delete_mealtype" doc:name="Flow Reference" />
+    </flow>
+    <flow name="get:/v1/MealDay:foodorder-config">
+        <flow-ref name="getall_mealdayFlow" doc:name="Flow Reference" />
+    </flow>
+    <flow name="get:/v1/MealType:foodorder-config">
+        <flow-ref name="getall_mealtypeFlow" doc:name="Flow Reference" />
+    </flow>
+    <flow name="get:/v1/categories:foodorder-config">
+        <flow-ref name="get_categories" doc:name="Flow Reference" />
+    </flow>
+    <flow name="get:/v1/foodItems:foodorder-config">
+        <set-payload value="{&#xA;&quot;foodId&quot;:1,&#xA;&quot;footName&quot;:&quot;Tea&quot;,&#xA;&quot;foodType&quot;:&quot;Beverage&quot;&#xA;}" doc:name="Set Payload" />
+    </flow>
+    <flow name="get:/v1/categories/{CATID}:foodorder-config">
+        <set-session-variable variableName="categoryId" value="#[message.inboundProperties.'http.uri.params'.CATID]" doc:name="category ID" />
+        <flow-ref name="getById_categories" doc:name="Flow Reference" />
+    </flow>
+    <flow name="get:/v1/foodItems/{FOODID}:foodorder-config">
+        <set-payload value="{&#xA; &quot;foodId&quot;:1,&#xA;  &quot;footName&quot;:&quot;Tea&quot;,&#xA;  &quot;foodType&quot;:&quot;Beverage&quot;&#xA;}" doc:name="Set Payload" />
+    </flow>
+    <flow name="get:/v1/MealDay/{MEALDAYID}:foodorder-config">
+        <set-session-variable variableName="dayId" value="#[message.inboundProperties.'http.uri.params'.MEALDAYID]" doc:name="Session Variable" />
+        <flow-ref name="getbyid_mealdayFlow" doc:name="Flow Reference" />
+    </flow>
+    <flow name="get:/v1/MealType/{MEALID}:foodorder-config">
+        <set-session-variable variableName="mealId" value="#[message.inboundProperties.'http.uri.params'.MEALID]" doc:name="Session Variable" />
+        <flow-ref name="getbyid_mealtypeFlow" doc:name="Flow Reference" />
+    </flow>
+    <flow name="post:/v1/MealDay:foodorder-config">
+        <flow-ref name="Insert_mealdayFlow1" doc:name="Flow Reference" />
+    </flow>
+    <flow name="post:/v1/MealType:foodorder-config">
+        <flow-ref name="post_mealtype" doc:name="Flow Reference" />
+    </flow>
+    <flow name="post:/v1/categories:foodorder-config">
+        <flow-ref name="post_foodCategory" doc:name="Flow Reference" />
+    </flow>
+    <flow name="post:/v1/foodItems:foodorder-config">
+        <set-payload value="{&#xA;&quot;response&quot; : &quot;successfully added&quot;&#xA;}" doc:name="Set Payload" />
+    </flow>
+    <flow name="put:/v1/cancel:foodorder-config">
+        <set-session-variable variableName="orderId" value="#[message.inboundProperties.'http.query.params'.OrderId]" doc:name="Order Id"/>
+        <flow-ref name="put_cancelFlow" doc:name="Flow Reference"/>
+
+    </flow>
+    <flow name="get:/v1/orders:foodorder-config">
+        <flow-ref name="get_ordersFlow" doc:name="Flow Reference"/>
+
+    </flow>
+    <flow name="get:/v1/userpass:foodorder-config">
+        <flow-ref name="get_userpassFlow" doc:name="Flow Reference"/>
+
+    </flow>
+    <flow name="get:/v1/orders/{ORDERID}:foodorder-config">
+        <set-session-variable variableName="orderId" value="#[message.inboundProperties.'http.uri.params'.ORDERID]" doc:name="order Id"/>
+        <flow-ref name="getbyId_ordersFlow" doc:name="Flow Reference"/>
+
+    </flow>
+    <flow name="post:/v1/orders:foodorder-config">
+        <set-variable variableName="var" value="#[json:orderDate]" doc:name="Variable"/>
+        <set-session-variable variableName="load" value="#[payload]" mimeType="application/json" doc:name="Session Variable"/>
+        <flow-ref name="post_ordersFlow" doc:name="Flow Reference"/>
+
+    </flow>
+    <flow name="post:/v1/userpass:foodorder-config">
+        <flow-ref name="post_userpassFlow" doc:name="Flow Reference"/>
+
+    </flow>
+    <apikit:mapping-exception-strategy name="foodorder-apiKitGlobalExceptionMapping">
+        <apikit:mapping statusCode="404">
+            <apikit:exception value="org.mule.module.apikit.exception.NotFoundException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+            <set-payload value="{ &quot;message&quot;: &quot;Resource not found&quot; }" doc:name="Set Payload" />
+        </apikit:mapping>
+        <apikit:mapping statusCode="405">
+            <apikit:exception value="org.mule.module.apikit.exception.MethodNotAllowedException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+            <set-payload value="{ &quot;message&quot;: &quot;Method not allowed&quot; }" doc:name="Set Payload" />
+        </apikit:mapping>
+        <apikit:mapping statusCode="415">
+            <apikit:exception value="org.mule.module.apikit.exception.UnsupportedMediaTypeException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+            <set-payload value="{ &quot;message&quot;: &quot;Unsupported media type&quot; }" doc:name="Set Payload" />
+        </apikit:mapping>
+        <apikit:mapping statusCode="406">
+            <apikit:exception value="org.mule.module.apikit.exception.NotAcceptableException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+            <set-payload value="{ &quot;message&quot;: &quot;Not acceptable&quot; }" doc:name="Set Payload" />
+        </apikit:mapping>
+        <apikit:mapping statusCode="400">
+            <apikit:exception value="org.mule.module.apikit.exception.BadRequestException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+            <set-payload value="{ &quot;message&quot;: &quot;Bad request&quot; }" doc:name="Set Payload" />
+        </apikit:mapping>
+    </apikit:mapping-exception-strategy>
+</mule>

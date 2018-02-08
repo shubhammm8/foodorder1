@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:core="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
+    <munit:config mock-connectors="false" mock-inbounds="false" name="munit" doc:name="MUnit configuration"/>
+    <spring:beans>
+        <spring:import resource="classpath:foodorder.xml"/>
+        <spring:import resource="classpath:implement_category.xml"/>
+        <spring:import resource="classpath:implement_cancel.xml"/>
+        <spring:import resource="classpath:implement_mealday.xml"/>
+        <spring:import resource="classpath:implement_mealtype.xml"/>
+        <spring:import resource="classpath:implement_orders.xml"/>
+        <spring:import resource="classpath:implement_userpass.xml"/>
+    </spring:beans>
+    <munit:test name="foodorder-test-suite-get_categoriesTest" description="Test">
+        <flow-ref name="get_categories" doc:name="Flow-ref to get_categories"/>
+        <munit:assert-on-equals expectedValue="[{&quot;categoryName&quot;:&quot;Tea&quot;,&quot;categoryType&quot;:&quot;Beverage&quot;,&quot;price&quot;:7,&quot;categoryId&quot;:1},{&quot;categoryName&quot;:&quot;Thali&quot;,&quot;categoryType&quot;:&quot;Veg&quot;,&quot;price&quot;:60,&quot;categoryId&quot;:2}]" actualValue="#[payload]" doc:name="Assert Equals"/>
+        <logger level="INFO" doc:name="Logger"/>
+    </munit:test>
+    <munit:test name="foodorder-test-suite-get:/v1/MealDay:foodorder-configTest" description="Test">
+        <flow-ref name="get:/v1/MealDay:foodorder-config" doc:name="Flow-ref to get:/v1/MealDay:foodorder-config"/>
+        <munit:assert-on-equals expectedValue="[{&quot;dayId&quot;:1,&quot;day&quot;:&quot;Monday&quot;,&quot;mealTypeName&quot;:&quot;Breakfast&quot;,&quot;mealTiming&quot;:&quot;7:00 a.m. - 9:00 a.m.&quot;,&quot;mealTypeId&quot;:1}]" actualValue="#[payload]" doc:name="Assert Equals"/>
+    </munit:test>
+    <munit:test name="foodorder-test-suite-get:/v1/MealType:foodorder-configTest" description="Test">
+        <flow-ref name="get:/v1/MealType:foodorder-config" doc:name="Flow-ref to get:/v1/MealType:foodorder-config"/>
+        <munit:assert-on-equals expectedValue="[{&quot;mealId&quot;:1,&quot;mealTypeId&quot;:1,&quot;mealTypeName&quot;:&quot;Breakfast&quot;,&quot;MealCategories&quot;:&quot;Tea&quot;},{&quot;mealId&quot;:1,&quot;mealTypeId&quot;:1,&quot;mealTypeName&quot;:&quot;Breakfast&quot;,&quot;MealCategories&quot;:&quot;Thali&quot;}]" actualValue="#[payload]" doc:name="Assert Equals"/>
+    </munit:test>
+    <munit:test name="foodorder-test-suite-get:/v1/MealDay/{MEALDAYID}:foodorder-configTest" description="Test">
+        <munit:set payload="#['']" doc:name="Set Message">
+            <munit:inbound-properties>
+                <munit:inbound-property key="http.uri.params" value="#[['MEALDAYID':'1']]"/>
+            </munit:inbound-properties>
+        </munit:set>
+       
+        <flow-ref name="get:/v1/MealDay/{MEALDAYID}:foodorder-config" doc:name="Flow-ref to get:/v1/MealDay/{MEALDAYID}:foodorder-config"/>
+        <munit:assert-on-equals expectedValue="[{&quot;dayId&quot;:1,&quot;day&quot;:&quot;Monday&quot;}]" actualValue="#[payload]" doc:name="Assert Equals"/>
+    </munit:test>
+</mule>

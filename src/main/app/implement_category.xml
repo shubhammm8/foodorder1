@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
+    <db:mysql-config name="MySQL_Configuration" host="localhost" port="3306" user="root" password="Welcome123" database="foodorder" doc:name="MySQL Configuration"/>
+    <flow name="get_categories">
+        <db:select config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[select * from foodcategoriestable;]]></db:parameterized-query>
+        </db:select>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+    </flow>
+    <flow name="post_foodCategory">
+        <db:insert config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[insert into foodcategoriestable values(null,#[json:categoryName],#[json:categoryType],#[json:price]);]]></db:parameterized-query>
+        </db:insert>
+        <db:select config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[select * from foodcategoriestable where categoryName=#[json:categoryName];]]></db:parameterized-query>
+        </db:select>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+    </flow>
+    <flow name="putfoodCategories">
+        <db:select config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[update foodcategoriestable set categoryName=#[json:categoryName],categoryType=#[json:categoryType],price=#[json:price] where categoryId=#[sessionVars.categoryId];]]></db:parameterized-query>
+        </db:select>
+        <db:select config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[select * from foodcategoriestable where categoryId=#[sessionVars.categoryId];]]></db:parameterized-query>
+        </db:select>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+    </flow>
+    <flow name="delete_category">
+        <db:delete config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[delete from foodcategoriestable where categoryId=#[sessionVars.foodcategoryId];]]></db:parameterized-query>
+        </db:delete>
+        <set-payload value="Successfully deleted the category " doc:name="Set Payload"/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+    </flow>
+    <flow name="getById_categories">
+        <db:select config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[select * from foodcategories_fooditems inner join foodcategoriestable  on FoodCategoriesTable_categoryId=categoryId inner join  foodItemstable on foodItems_foodId=foodId where categoryId=#[sessionVars.categoryId];]]></db:parameterized-query>
+        </db:select>
+        <dw:transform-message doc:name="Transform Message">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload map {
+	"categoryId":$.categoryId,
+	"categoryName":$.categoryName,
+	"categoryType":$.categoryType,
+	"price":$.price
+	
+}]]></dw:set-payload>
+        </dw:transform-message>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+    </flow>
+</mule>

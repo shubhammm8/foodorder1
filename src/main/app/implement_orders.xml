@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
+    <flow name="get_ordersFlow">
+        <db:select config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[select orderId,orderDate,OrderStatus,orderby,orders.price,categoryId,categoryName,categoryType from order_category inner join orders on Oc_orderId=orderId
+inner join foodcategoriestable on Oc_CategoryId=categoryId;]]></db:parameterized-query>
+        </db:select>
+        <dw:transform-message doc:name="Transform Message">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload groupBy $.orderId map {
+	"$$":{
+		"OrderId":payload.orderId distinctBy $.OrderId,
+		"orderdate":payload.orderDate distinctBy $.orderDate,
+		"orderby":payload.orderby distinctBy  $.orderby,
+		"orderStatus":payload.OrderStatus distinctBy $.OrderStatus,
+		"price":payload.price distinctBy $.price,
+		"contains":payload groupBy $.categoryId map {
+			
+			"categoryId":payload.categoryId distinctBy $.categoryId,
+			"categoryName":payload.categoryName distinctBy $.categoryName,
+			"categoryType":payload.categoryType distinctBy $.categoryType
+			
+		}
+	
+}
+}]]></dw:set-payload>
+        </dw:transform-message>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+    </flow>
+    <flow name="post_ordersFlow">
+        <db:insert config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[Insert into orders values(null,#[json:orderDate],#[json:orderStatus],#[json:orderby],#[json:price]);]]></db:parameterized-query>
+        </db:insert>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <flow-ref name="postinggggggggggg_ordersFlow" doc:name="Flow Reference"/>
+    </flow>
+    <flow name="getbyId_ordersFlow">
+        <db:select config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[select orderId,orderDate,OrderStatus,orderby,orders.price,categoryId,categoryName,categoryType from order_category inner join orders on Oc_orderId=orderId
+inner join foodcategoriestable on Oc_CategoryId=categoryId where orderId=#[sessionVars.orderId];]]></db:parameterized-query>
+        </db:select>
+        <dw:transform-message doc:name="Transform Message">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+{
+	"orderId":payload.orderId,
+	"OrderBy":payload.orderby,
+	"oderDate":payload.orderDate,
+	"orderStatus":payload.OrderStatus,
+	"Order Price":payload.price,
+	"categories":payload.categoryId groupBy $.categoryId map { 
+		"categoryId":payload.categoryId distinctBy $.categoryId,
+		"categoryName":payload.categoryName distinctBy $.categoryName,
+		"categoryType":payload.categoryType distinctBy $.categoryType
+		
+		
+	}
+	
+}]]></dw:set-payload>
+        </dw:transform-message>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+    </flow>
+    <flow name="postinggggggggggg_ordersFlow">
+        <set-payload value="#[sessionVars.load]" mimeType="application/json" doc:name="Set Payload"/>
+        <logger message="#[json:orderDate]" level="INFO" doc:name="Logger"/>
+    </flow>
+</mule>

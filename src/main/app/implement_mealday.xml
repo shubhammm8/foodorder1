@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
+    <flow name="getall_mealdayFlow">
+        <db:select config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[Select dayId,day,mealTiming,mealTypeId,mealTypeName from mealday_mealtype innner join mealday  on MealDay_dayId=dayId
+inner join mealtypetable on mealType_mealId=mealId;]]></db:parameterized-query>
+        </db:select>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+    </flow>
+    <flow name="Insert_mealdayFlow1">
+        <db:insert config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[insert into mealday values(null,#[json:mealday]);]]></db:parameterized-query>
+        </db:insert>
+        <set-payload value="successfully added" doc:name="Set Payload"/>
+    </flow>
+    <flow name="getbyid_mealdayFlow">
+        <db:select config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[Select * from mealday where dayId=#[sessionVars.dayId];]]></db:parameterized-query>
+        </db:select>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+    </flow>
+    <flow name="put_mealdayFlow">
+        <db:update config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[update mealday set day=#[json:mealday] where dayId=#[sessionVars.dayId];]]></db:parameterized-query>
+        </db:update>
+        <db:select config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[select * from mealday where dayId=#[sessionVars.dayId];]]></db:parameterized-query>
+        </db:select>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+    </flow>
+    <flow name="delete_mealdayFlow">
+        <db:delete config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[delete from mealday where dayid=#[sessionVars.dayId];]]></db:parameterized-query>
+        </db:delete>
+        <set-payload value="&quot;successfully deleted&quot;" doc:name="Set Payload"/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+    </flow>
+</mule>

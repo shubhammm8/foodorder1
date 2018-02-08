@@ -1,0 +1,362 @@
+#%RAML 1.0
+baseUri: https://mocksvc.mulesoft.com/mocks/f3daddc0-44d7-462c-8520-3f20b8d6aeac # 
+title: foodorder
+
+/v1:
+  /foodItems:
+    get:
+     responses: 
+      200:
+       body: 
+        application/json:
+          example: | 
+              {
+              "foodId":1,
+              "footName":"Tea",
+              "foodType":"Beverage"
+              }
+    post:
+      body:  
+        application/json:
+          example: |
+             {
+              "foodId":1,
+              "footName":"Tea",
+              "foodType":"Beverage"
+              }
+      responses: 
+        200:
+          body: 
+            application/json:
+              example:
+               {"response":"successfully added"}
+    /{FOODID}:
+      get:
+        responses: 
+            200:
+              body: 
+                application/json:
+                  example: | 
+                    {
+                     "foodId":1,
+                      "footName":"Tea",
+                      "foodType":"Beverage"
+                    }
+
+      put:
+        body: 
+          application/json:
+            example:
+             { 
+               "foodId":1,
+               "footName":"Tea",
+               "foodType":"Beverage"
+             }
+        responses: 
+          200:
+            body: 
+              application/json:
+                example: |
+                 {
+                  "response":"successfully updated"
+                 }
+      delete:
+       responses: 
+         204:
+          body:
+            application/json:
+              example: |
+                {
+                  "response":"Deleted Successfully"
+                 }
+
+
+  /categories:
+    get:
+      responses: 
+        200:
+          body: 
+            application/json:
+              example: |
+                {
+                  "categoryId":1,
+                  "categoryName":"category",
+                  "categoryType":"type",
+                  "price":7
+                }
+    post:
+      body: 
+        application/json:
+          example: |
+           {
+                  "categoryId":1,
+                  "categoryName":"category",
+                  "categoryType":"type",
+                  "price":7
+           }
+      responses: 
+        201:
+          body: 
+            application/json:
+              example: |
+                {
+                  "response":"successfully added"
+                }
+
+    /{CATID}:
+      get:
+       responses: 
+         200:
+          body: 
+           application/json:
+            example: |
+             {
+                  "categoryId":"CATID",
+                  "categoryName":"category",
+                  "categoryType":"type",
+                  "price":7
+             }
+      put:
+        body: 
+          application/json:
+            example: |
+             {
+                
+                  "categoryName":"category",
+                  "categoryType":"type",
+                  "price":7
+             }
+        responses: 
+          200:
+            body: 
+              application/json:
+                example: | 
+                 {
+                   "responses":"successfully updated"
+                 }
+      delete:
+        responses: 
+          202:
+            body: 
+              application/json:
+                example: | 
+                 {
+                    "response":"deleted successfully"
+                 }
+  /MealType:
+    get:
+      body: 
+        application/json:
+          example: | 
+           {
+                "mealId":1,
+                "mealTime":"9am - 11am",
+                "mealTypeID":1,
+                "mealTypeName":"Breakfast"
+
+           }
+    post:
+     body: 
+       application/json:
+         example: | 
+           {
+
+                "mealId":1,
+                "mealTime":"9am - 11am",
+                "mealTypeID":1,
+                "mealTypeName":"Breakfast"
+
+           }
+    /{MEALID}:
+      get:  
+        responses: 
+          200:
+            body: 
+              application/json:
+                example: | 
+                 {
+                  "mealId":1,
+                  "mealTime":"9am - 11am",
+                  "mealTypeID":1,
+                  "mealTypeName":"Breakfast"
+                 }
+      put:
+        body: 
+          application/json:
+            example: |
+             {
+
+                "mealId":1,
+                "mealTime":"9am - 11am",
+                "mealTypeID":1,
+                "mealTypeName":"Breakfast"
+
+             }
+        responses: 
+          200:
+            body: 
+              application/json:
+                example: | 
+                 {
+                   "response":"successfully updated"
+                 }
+      delete:
+        responses: 
+            202:
+              body: 
+               application/json:
+                 example: |
+                  {
+                     "mealId":1,
+                     "mealTime":"9am - 11am",
+                      "mealTypeID":1,
+                      "mealTypeName":"Breakfast"
+                  }
+  /MealDay:
+    get:
+      body: 
+        application/json:
+          example: |
+           {
+             "mealId":1,
+             "mealDay":"Monday"
+           }
+    post:
+     body:
+      application/json:
+          example: |
+            {
+              "mealId":1,
+             "mealDay":"Monday"
+            }
+     responses: 
+        201:
+          body: 
+            application/json:
+              example: |
+               {
+                 "responses":"succssfully added"
+               }
+    /{MEALDAYID}:
+      get:
+        responses: 
+          200:
+           body: 
+             application/json:
+               example: |
+                  {
+                   "mealId":"MEAlDAYID",
+                   "mealDay":"Monday"
+                   }
+      put:
+       body:  
+          application/json:
+            example: |
+             {
+               
+             "mealDay":"Monday"
+             }
+       responses: 
+          200:
+            body: 
+              application/json:
+                example: |
+                 {
+                   "responses":"successfully updated"
+                 }
+            
+      delete:
+       responses: 
+        202:
+         body: 
+          application/json:
+            example: | 
+             {
+               "respose":"succssfully deleted"
+             }
+  /orders:
+    get:
+     responses: 
+      200: 
+       body: 
+        application/json:
+          example: |
+           {
+             "orderId":1,
+             "orderStatus":"placed"
+           }
+    post:
+      body:
+        application/json:
+         example: |
+          {
+           "orderDate":"2018-01-19",
+           "orderStatus":"placed",
+           "orderby":"shubham",
+           "price":100
+              }        
+      responses: 
+        201:
+          body: 
+            application/json:
+              example: |
+                {
+                  "response":"successfully added order"
+                }
+    /{ORDERID}:
+      get:
+        queryParameters: 
+          OrderId:
+        responses: 
+          200:
+            body: 
+              application/json:
+                example: | 
+                 {
+                   "orderId":100,
+                   "orderStatus":"placed",
+                   "orderDate":"2018-10-3"
+                 }
+  /userpass:
+    get:
+      responses: 
+        200:
+          body: 
+            application/json:
+              example: |
+                {
+                  "userId":1,
+                  "username":"admin",
+                  "pass":"admin"
+
+                }
+    post:
+      body: 
+        application/json:
+          example: |
+           {
+             "username":"XXX",
+             "pass":"YYY"
+           }
+      responses: 
+        201:
+          body: 
+            application/json:
+              example: |
+               {
+                 "response":"successfully registered!"
+               }
+    
+  /cancel:
+    put:
+      queryParameters: 
+        OrderId:
+      responses: 
+        202:
+          body: 
+            application/json:
+              example: |
+               {
+
+                 "response":"Order cancelled!"
+               }
